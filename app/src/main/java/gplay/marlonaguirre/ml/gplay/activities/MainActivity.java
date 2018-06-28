@@ -5,41 +5,55 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.TextView;
+import android.util.Log;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 import gplay.marlonaguirre.ml.gplay.R;
 import gplay.marlonaguirre.ml.gplay.adapters.SongsAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerSongs;
-    ArrayList<String> songs_list;
-    ArrayList<String> directories_list;
-
+    ArrayList<String> songs_list,foilders_list;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerSongs = findViewById(R.id.recyclerSongs);
+        foilders_list = new ArrayList<>();
         songs_list = new ArrayList<>();
-        directories_list = new ArrayList<>();
+
         String path = Environment.getExternalStorageDirectory().getPath();
         File directorioActual = new File(path);
-        for(File file : directorioActual.listFiles()){
-            if(file.isDirectory()){
-                directories_list.add(file.getAbsolutePath());
-            }
-        }
-        for(String file : directories_list){
-            File file2 = new File(file);
-            for(File files : file2.listFiles()){
-                songs_list.add(files.getName());
-            }
-        }
+
+        searchSongs(directorioActual);
+        // Ordenamos la lista de archivos para que se muestren en orden alfabetico
+        Collections.sort(songs_list, String.CASE_INSENSITIVE_ORDER);
 
         SongsAdapter adapter = new SongsAdapter(songs_list);
         recyclerSongs.setLayoutManager( new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         recyclerSongs.setAdapter(adapter);
+    }
+
+    private ArrayList<String> searchSongs(File path) {
+        for(File file : path.listFiles()){
+            if(file.isFile()  && file.getName().endsWith(".mp3") && !file.isHidden()){
+                foilders_list.add(file.getAbsoluteFile().getName());
+//                Log.e("archivo: ",file.getName()+" FOLDER: " +file.getParentFile().getName());
+                songs_list.add(file.getName());
+            }else{
+                if(file.isDirectory() && !file.isHidden()){
+//                    Log.e("DIRECTORIO",file.getName());
+                    searchSongs(file);
+
+                }
+            }
+
+        }
+        return  songs_list;
     }
 }
