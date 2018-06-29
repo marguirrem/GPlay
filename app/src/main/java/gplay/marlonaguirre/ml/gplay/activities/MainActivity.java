@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.TabHost;
 import android.widget.Toast;
 
 import java.io.File;
@@ -20,13 +21,32 @@ import gplay.marlonaguirre.ml.gplay.adapters.SongsAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
-    RecyclerView recyclerSongs;
+    RecyclerView recyclerSongs,recyclerFolders;
     ArrayList<String> songs_list,foilders_list;
+    TabHost tabHost;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tabHost = (TabHost) findViewById(R.id.tabHost);
+
+
+        tabHost.setup();
+        TabHost.TabSpec thSongs = tabHost.newTabSpec("Tab1");
+        thSongs.setIndicator("Songs");
+        thSongs.setContent(R.id.layoutSongs);
+
+
+        TabHost.TabSpec thFolders = tabHost.newTabSpec("Tab2");
+        thFolders.setIndicator("Folders");
+        thFolders.setContent(R.id.layoutFolders);
+
+        tabHost.addTab(thSongs);
+        tabHost.addTab(thFolders);
+
         recyclerSongs = findViewById(R.id.recyclerSongs);
+
         foilders_list = new ArrayList<>();
         songs_list = new ArrayList<>();
 
