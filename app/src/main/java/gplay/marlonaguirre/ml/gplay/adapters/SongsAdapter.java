@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import gplay.marlonaguirre.ml.gplay.R;
@@ -16,9 +17,9 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSo
         implements View.OnClickListener {
     private View.OnClickListener listener;
 
-    ArrayList<String> songs_list;
+    ArrayList<File> songs_list;
 
-    public SongsAdapter(ArrayList<String> songs_list) {
+    public SongsAdapter(ArrayList<File> songs_list) {
         this.songs_list = songs_list;
     }
 
@@ -33,7 +34,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSo
 
     @Override
     public void onBindViewHolder(@NonNull SongsAdapter.ViewHolderSongs holder, int position) {
-        holder.tvSong.setText( songs_list.get(position));
+        holder.tvSong.setText( songs_list.get(position).getName());
 
     }
 

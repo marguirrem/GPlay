@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import gplay.marlonaguirre.ml.gplay.R;
@@ -14,9 +15,9 @@ import gplay.marlonaguirre.ml.gplay.R;
 public class FoldersAdapter extends RecyclerView.Adapter<FoldersAdapter.ViewHolderFolders>
 implements View.OnClickListener{
     private View.OnClickListener listener;
-    ArrayList<String> folders_list;
+    ArrayList<File> folders_list;
 
-    public FoldersAdapter(ArrayList<String> folders_list) {
+    public FoldersAdapter(ArrayList<File> folders_list) {
         this.folders_list = folders_list;
     }
 
@@ -31,7 +32,7 @@ implements View.OnClickListener{
 
     @Override
     public void onBindViewHolder(@NonNull FoldersAdapter.ViewHolderFolders holder, int position) {
-        holder.tvFolderName.setText(folders_list.get(position));
+        holder.tvFolderName.setText(folders_list.get(position).getName());
     }
 
     @Override
