@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -34,11 +37,24 @@ public class MainActivity extends AppCompatActivity {
         // Ordenamos la lista de archivos para que se muestren en orden alfabetico
         Collections.sort(songs_list, String.CASE_INSENSITIVE_ORDER);
 
-        SongsAdapter adapter = new SongsAdapter(songs_list);
+        final SongsAdapter adapter = new SongsAdapter(songs_list);
+        adapter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this,
+                        songs_list.get(recyclerSongs
+                                .getChildAdapterPosition(view))
+                        , Toast.LENGTH_SHORT).show();
+
+            }
+        });
         recyclerSongs.setLayoutManager( new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         recyclerSongs.setAdapter(adapter);
     }
 
+    public void toggleDetails(View view) {
+        Toast.makeText(view.getContext(), "Click", Toast.LENGTH_SHORT).show();
+    }
     private ArrayList<String> searchSongs(File path) {
         for(File file : path.listFiles()){
             if(file.isFile()  && file.getName().endsWith(".mp3") && !file.isHidden()){
@@ -49,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
                 if(file.isDirectory() && !file.isHidden()){
 //                    Log.e("DIRECTORIO",file.getName());
                     searchSongs(file);
-
                 }
             }
 

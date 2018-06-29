@@ -6,12 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import gplay.marlonaguirre.ml.gplay.R;
 
-public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSongs>{
+public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSongs>
+        implements View.OnClickListener {
+    private View.OnClickListener listener;
 
     ArrayList<String> songs_list;
 
@@ -24,18 +27,31 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSo
     public SongsAdapter.ViewHolderSongs onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.song_item_list,null,false);
+        view.setOnClickListener(this);
         return new ViewHolderSongs(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SongsAdapter.ViewHolderSongs holder, int position) {
         holder.tvSong.setText( songs_list.get(position));
+
     }
 
     @Override
     public int getItemCount() {
         return songs_list.size();
     }
+    public void setOnClickListener(View.OnClickListener listener){
+        this.listener = listener;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (listener!=null){
+            listener.onClick(v);
+        }
+    }
+
 
     public class ViewHolderSongs extends RecyclerView.ViewHolder {
         TextView tvSong;
