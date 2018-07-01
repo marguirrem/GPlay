@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("song",  songs_list.get(recyclerSongs.getChildAdapterPosition(view)));
+                bundle.putSerializable("song",  songs_list);
+                bundle.putInt("position",recyclerFolders.getChildAdapterPosition(view));
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
@@ -134,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
+
                 songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
             }
             while (musicCursor.moveToNext());
