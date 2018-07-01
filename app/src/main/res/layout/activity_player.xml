@@ -10,7 +10,14 @@
         android:id="@+id/playerTvSong"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Song"/>
+        android:text="Song"
+        android:drawableLeft="@mipmap/ic_launcher_round"/>
+
+    <ImageView
+        android:id="@+id/imageSong"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:src="@mipmap/ic_launcher"/>
 
     <TextView
         android:id="@+id/playerTvSongDuration"
@@ -22,10 +29,35 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Artist"/>
-
-    <Button
-        android:id="@+id/btnPlay"
+    <TextView
+        android:id="@+id/playerTvAlbum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Play"/>
+        android:text="Artist"/>
+
+    <GridLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/btnPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/ic_skip_previous_black_24dp"/>
+        <ImageButton
+            android:id="@+id/btnPlay"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/ic_play_circle_outline_black_24dp"
+            />
+        <ImageButton
+            android:id="@+id/btnNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/ic_skip_next_black_24dp"/>
+    </GridLayout>
+
+
+
 </LinearLayout>

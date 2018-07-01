@@ -12,14 +12,15 @@ import java.io.File;
 import java.util.ArrayList;
 
 import gplay.marlonaguirre.ml.gplay.R;
+import gplay.marlonaguirre.ml.gplay.Song;
 
 public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSongs>
         implements View.OnClickListener {
     private View.OnClickListener listener;
 
-    ArrayList<File> songs_list;
+    ArrayList<Song> songs_list;
 
-    public SongsAdapter(ArrayList<File> songs_list) {
+    public SongsAdapter(ArrayList<Song> songs_list) {
         this.songs_list = songs_list;
     }
 
@@ -34,7 +35,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolderSo
 
     @Override
     public void onBindViewHolder(@NonNull SongsAdapter.ViewHolderSongs holder, int position) {
-        holder.tvSong.setText( songs_list.get(position).getName());
+        holder.tvSong.setText( songs_list.get(position).getTitle());
 
     }
 
