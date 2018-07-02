@@ -3,7 +3,6 @@ package gplay.marlonaguirre.ml.gplay.activities;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -13,17 +12,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TabHost;
-import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
+
 import gplay.marlonaguirre.ml.gplay.R;
-import gplay.marlonaguirre.ml.gplay.Song;
+import gplay.marlonaguirre.ml.gplay.pojos.Song;
 import gplay.marlonaguirre.ml.gplay.adapters.FoldersAdapter;
 import gplay.marlonaguirre.ml.gplay.adapters.SongsAdapter;
 

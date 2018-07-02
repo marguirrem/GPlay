@@ -35,6 +35,11 @@
         android:layout_height="wrap_content"
         android:text="Artist"/>
 
+    <SeekBar
+        android:id="@+id/songProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <GridLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

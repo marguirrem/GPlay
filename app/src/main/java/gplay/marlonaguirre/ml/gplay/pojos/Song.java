@@ -1,4 +1,4 @@
-package gplay.marlonaguirre.ml.gplay;
+package gplay.marlonaguirre.ml.gplay.pojos;
 
 import java.io.Serializable;
 
