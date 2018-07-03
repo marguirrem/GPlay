@@ -25,20 +25,21 @@ public class PlayerActivity extends AppCompatActivity {
     TextView tvSong,tvDuration,tvArtist,tvAlbum;
     ImageButton btnPlay,btnNext,btnPrev;
     SeekBar seekBar;
-    Runnable runnable;
-    Handler handler;
+    Runnable mUpdateSeekbar;
+    Handler mSeekbarUpdateHandler;
     static MediaPlayer mp = new MediaPlayer();
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        handler.removeCallbacks(runnable);
+        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
 
     }
 
@@ -63,9 +64,7 @@ public class PlayerActivity extends AppCompatActivity {
         String album = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
         String autor = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_AUTHOR );
         */
-
-
-        if(mp.isPlaying()){
+       /* if(mp.isPlaying()){
             mp.stop();
             mp.release();
             //mp.release();
@@ -79,21 +78,35 @@ public class PlayerActivity extends AppCompatActivity {
             mp.prepare();
             seekBar.setMax(mp.getDuration());
             mp.start();
+            seekBar.setMax(mp.getDuration());
             btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
+       playSong();
 
+        mSeekbarUpdateHandler = new Handler();
+        Runnable mUpdateSeekbar = new Runnable() {
+            @Override
+            public void run() {
+                seekBar.setProgress((mp.getCurrentPosition() % 100));
+                Log.e("LOG","progress: "+seekBar.getProgress()+" max: "+seekBar.getMax());
+                if(seekBar.getProgress() == seekBar.getMax()){
+                    position++;
+                    btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+                    playSong();
+                }
+                mSeekbarUpdateHandler.postDelayed(this, 500);
+            }
+        };
 
-
+        mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
 
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean input) {
-                mp.seekTo(progress);
-            }
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean input) {}
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -102,7 +115,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mp.seekTo(seekBar.getProgress());
             }
         });
 
@@ -129,23 +142,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if(position <songs.size()){
                     position++;
                     Toast.makeText(PlayerActivity.this, songs.get(position).getTitle(), Toast.LENGTH_SHORT).show();
-                    try {
-                        if (mp.isPlaying()){
-                            mp.stop();
-                            mp.release();
-                        }
-                        mp = new MediaPlayer();
-                        mp.setDataSource(songs.get(position).getUrl());
-                        mp.prepare();
-                        updateTexts(position);
-                        seekBar.setMax(mp.getDuration());
-                        seekBar.setProgress(0);
-
-                        mp.start();
-                        btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    playSong();
                 }
             }
         });
@@ -156,30 +153,31 @@ public class PlayerActivity extends AppCompatActivity {
                 if(position > 0){
                     position--;
                     Toast.makeText(PlayerActivity.this, songs.get(position).getTitle(), Toast.LENGTH_SHORT).show();
-                    if (mp.isPlaying()) {
-                        mp.stop();
-                        mp.release();
-                    }
-                    try {
-                        mp = new MediaPlayer();
-                        mp.setDataSource(songs.get(position).getUrl());
-                        mp.prepare();
-                        updateTexts(position);
-                        seekBar.setMax(mp.getDuration());
-                        seekBar.setProgress(0);
-
-                        mp.start();
-                        btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    playSong();
                 }
             }
         });
-
-
     }
 
+    public void playSong(){
+        if (mp.isPlaying()) {
+            mp.stop();
+            mp.release();
+        }
+        try {
+            mp = new MediaPlayer();
+            mp.setDataSource(songs.get(position).getUrl());
+            mp.prepare();
+            updateTexts(position);
+            seekBar.setMax((mp.getDuration() % 100) );
+            seekBar.setProgress(0);
+
+            mp.start();
+            btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void initComponents(){
         tvSong      = findViewById(R.id.playerTvSong);
@@ -190,8 +188,7 @@ public class PlayerActivity extends AppCompatActivity {
         btnNext     = findViewById(R.id.btnNext);
         btnPrev     = findViewById(R.id.btnPrev);
         songs       = new ArrayList<>();
-      //  mp          = new MediaPlayer();
-        handler     = new Handler();
+        mSeekbarUpdateHandler     = new Handler();
         final Bundle file = getIntent().getExtras();
         songs       = (ArrayList<Song>) file.getSerializable("song");
         position    = file.getInt("position");
