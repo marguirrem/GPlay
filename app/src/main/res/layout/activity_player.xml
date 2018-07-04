@@ -33,7 +33,13 @@
         android:id="@+id/playerTvAlbum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Artist"/>
+        android:text="Album"/>
+
+    <TextView
+        android:id="@+id/playerTvCurrentTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CurrentTime"/>
 
     <SeekBar
         android:id="@+id/songProgress"

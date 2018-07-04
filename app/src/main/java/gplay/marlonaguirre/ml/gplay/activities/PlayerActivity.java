@@ -22,11 +22,14 @@ import gplay.marlonaguirre.ml.gplay.pojos.Song;
 public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<Song> songs;
-    TextView tvSong,tvDuration,tvArtist,tvAlbum;
+    TextView tvSong,tvDuration,tvArtist,tvAlbum,tvCurrentTime;
     ImageButton btnPlay,btnNext,btnPrev;
     SeekBar seekBar;
     Runnable mUpdateSeekbar;
     Handler mSeekbarUpdateHandler;
+    int position;
+    long currentSecond=0;
+    int currentMinute=0,sec=0;
     static MediaPlayer mp = new MediaPlayer();
 
     @Override
@@ -51,7 +54,6 @@ public class PlayerActivity extends AppCompatActivity {
         btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
     }
 
-    int position;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,14 +92,29 @@ public class PlayerActivity extends AppCompatActivity {
         Runnable mUpdateSeekbar = new Runnable() {
             @Override
             public void run() {
-                seekBar.setProgress((mp.getCurrentPosition() % 100));
-                Log.e("LOG","progress: "+seekBar.getProgress()+" max: "+seekBar.getMax());
-                if(seekBar.getProgress() == seekBar.getMax()){
+                currentMinute =((mp.getCurrentPosition()/1000)/60);
+                //if(currentMinute!=0){
+                    tvCurrentTime.setText(currentMinute+":"+((currentSecond-60*currentMinute) ));
+                //}
+                //else{
+                  //  tvCurrentTime.setText(currentMinute+":"+currentSecond);
+                //}
+                currentSecond=(((mp.getCurrentPosition()/1000)) );
+                seekBar.setProgress((mp.getCurrentPosition() / 1000));
+                Log.e("HILO","currentSecond: "+currentSecond+" totalSeconds: "+((mp.getDuration()/1000)%60));
+                //tvCurrentTime.setText(String.valueOf(currentMinute+":"+currentSecond));
+
+
+                //Log.e("LOG","progress: "+seekBar.getProgress()+" max: "+seekBar.getMax());
+               // tvCurrentTime.setText(String.valueOf((minutes+":"+seconds)));
+                if(seekBar.getProgress() == (seekBar.getMax())){
                     position++;
                     btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                     playSong();
                 }
-                mSeekbarUpdateHandler.postDelayed(this, 500);
+                sec++;
+
+                mSeekbarUpdateHandler.postDelayed(this, 50);
             }
         };
 
@@ -115,7 +132,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mp.seekTo(seekBar.getProgress());
+                mp.seekTo((seekBar.getProgress()*1000));
             }
         });
 
@@ -169,7 +186,7 @@ public class PlayerActivity extends AppCompatActivity {
             mp.setDataSource(songs.get(position).getUrl());
             mp.prepare();
             updateTexts(position);
-            seekBar.setMax((mp.getDuration() % 100) );
+            seekBar.setMax((mp.getDuration() / 1000) );
             seekBar.setProgress(0);
 
             mp.start();
@@ -184,6 +201,7 @@ public class PlayerActivity extends AppCompatActivity {
         tvDuration  = findViewById(R.id.playerTvSongDuration);
         tvArtist    = findViewById(R.id.playerTvArtist);
         tvAlbum     = findViewById(R.id.playerTvAlbum);
+        tvCurrentTime = findViewById(R.id.playerTvCurrentTime);
         btnPlay     = findViewById(R.id.btnPlay);
         btnNext     = findViewById(R.id.btnNext);
         btnPrev     = findViewById(R.id.btnPrev);
