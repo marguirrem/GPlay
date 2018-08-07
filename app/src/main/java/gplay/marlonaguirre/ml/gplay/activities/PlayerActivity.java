@@ -2,6 +2,8 @@ package gplay.marlonaguirre.ml.gplay.activities;
 
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +21,8 @@ import java.util.TimerTask;
 import gplay.marlonaguirre.ml.gplay.R;
 import gplay.marlonaguirre.ml.gplay.pojos.Song;
 
+import static android.support.v4.app.NotificationCompat.*;
+
 public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<Song> songs;
@@ -31,7 +35,8 @@ public class PlayerActivity extends AppCompatActivity {
     long currentSecond=0;
     int currentMinute=0,sec=0;
     static MediaPlayer mp = new MediaPlayer();
-
+    NotificationManagerCompat notificationManager;
+    Builder mBuilder;
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -60,32 +65,6 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
         initComponents();
 
-        /*MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-        mediaMetadataRetriever.setDataSource(song.getAbsolutePath());
-        String artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        String album = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-        String autor = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_AUTHOR );
-        */
-       /* if(mp.isPlaying()){
-            mp.stop();
-            mp.release();
-            //mp.release();
-            Toast.makeText(this, "stop playing", Toast.LENGTH_SHORT).show();
-        }
-
-        Toast.makeText(this, "no stop", Toast.LENGTH_SHORT).show();
-        try {
-            mp = new MediaPlayer();
-            mp.setDataSource(songs.get(position).getUrl());
-            mp.prepare();
-            seekBar.setMax(mp.getDuration());
-            mp.start();
-            seekBar.setMax(mp.getDuration());
-            btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
        playSong();
 
         mSeekbarUpdateHandler = new Handler();
@@ -95,18 +74,9 @@ public class PlayerActivity extends AppCompatActivity {
                 currentMinute =((mp.getCurrentPosition()/1000)/60);
                 //if(currentMinute!=0){
                     tvCurrentTime.setText(currentMinute+":"+((currentSecond-60*currentMinute) ));
-                //}
-                //else{
-                  //  tvCurrentTime.setText(currentMinute+":"+currentSecond);
-                //}
                 currentSecond=(((mp.getCurrentPosition()/1000)) );
                 seekBar.setProgress((mp.getCurrentPosition() / 1000));
                 Log.e("HILO","currentSecond: "+currentSecond+" totalSeconds: "+((mp.getDuration()/1000)%60));
-                //tvCurrentTime.setText(String.valueOf(currentMinute+":"+currentSecond));
-
-
-                //Log.e("LOG","progress: "+seekBar.getProgress()+" max: "+seekBar.getMax());
-               // tvCurrentTime.setText(String.valueOf((minutes+":"+seconds)));
                 if(seekBar.getProgress() == (seekBar.getMax())){
                     position++;
                     btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
@@ -180,8 +150,10 @@ public class PlayerActivity extends AppCompatActivity {
         if (mp.isPlaying()) {
             mp.stop();
             mp.release();
+            mBuilder=null;
         }
         try {
+
             mp = new MediaPlayer();
             mp.setDataSource(songs.get(position).getUrl());
             mp.prepare();
@@ -191,6 +163,18 @@ public class PlayerActivity extends AppCompatActivity {
 
             mp.start();
             btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+
+            mBuilder = new Builder(this,"NOT")
+                    .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
+                    .setContentTitle(songs.get(position).getArtist())
+                    .setContentText(songs.get(position).getTitle())
+                    .setStyle(new BigTextStyle()
+                            .bigText(songs.get(position).getTitle()))
+                    .setPriority(PRIORITY_DEFAULT);
+
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(1, mBuilder.build());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -211,6 +195,16 @@ public class PlayerActivity extends AppCompatActivity {
         songs       = (ArrayList<Song>) file.getSerializable("song");
         position    = file.getInt("position");
         seekBar     = findViewById(R.id.songProgress);
+        mBuilder = new Builder(this,"NOT")
+                .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
+                .setContentTitle(songs.get(position).getArtist())
+                .setContentText(songs.get(position).getTitle())
+                .setStyle(new BigTextStyle()
+                        .bigText(songs.get(position).getTitle()))
+                .setPriority(PRIORITY_DEFAULT);
+
+        notificationManager = NotificationManagerCompat.from(this);
+
     }
 
     public void updateTexts(int position){

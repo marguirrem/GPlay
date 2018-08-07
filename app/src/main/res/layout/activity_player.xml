@@ -20,11 +20,6 @@
         android:src="@mipmap/ic_launcher"/>
 
     <TextView
-        android:id="@+id/playerTvSongDuration"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Duration"/>
-    <TextView
         android:id="@+id/playerTvArtist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,11 +30,25 @@
         android:layout_height="wrap_content"
         android:text="Album"/>
 
-    <TextView
-        android:id="@+id/playerTvCurrentTime"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CurrentTime"/>
+        android:padding="3dp">
+
+        <TextView
+            android:id="@+id/playerTvCurrentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="CurrentTime"/>
+
+        <TextView
+            android:id="@+id/playerTvSongDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Duration"/>
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/songProgress"
