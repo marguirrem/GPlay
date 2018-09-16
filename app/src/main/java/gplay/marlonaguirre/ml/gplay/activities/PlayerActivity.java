@@ -1,5 +1,6 @@
 package gplay.marlonaguirre.ml.gplay.activities;
 
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,17 +28,18 @@ import static android.support.v4.app.NotificationCompat.*;
 public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<Song> songs;
-    TextView tvSong,tvDuration,tvArtist,tvAlbum,tvCurrentTime;
-    ImageButton btnPlay,btnNext,btnPrev;
+    TextView tvSong, tvDuration, tvArtist, tvAlbum, tvCurrentTime;
+    ImageButton btnPlay, btnNext, btnPrev;
     SeekBar seekBar;
     Runnable mUpdateSeekbar;
     Handler mSeekbarUpdateHandler;
     int position;
-    long currentSecond=0;
-    int currentMinute=0,sec=0;
+    long currentSecond = 0;
+    int currentMinute = 0, sec = 0;
     static MediaPlayer mp = new MediaPlayer();
     NotificationManagerCompat notificationManager;
     Builder mBuilder;
+    ImageView coverImage;
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -73,7 +76,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void run() {
                 currentMinute =((mp.getCurrentPosition()/1000)/60);
                 //if(currentMinute!=0){
-                    tvCurrentTime.setText(currentMinute+":"+((currentSecond-60*currentMinute) ));
+                tvCurrentTime.setText(currentMinute+":"+((currentSecond-60*currentMinute) ));
                 currentSecond=(((mp.getCurrentPosition()/1000)) );
                 seekBar.setProgress((mp.getCurrentPosition() / 1000));
                 Log.e("HILO","currentSecond: "+currentSecond+" totalSeconds: "+((mp.getDuration()/1000)%60));
@@ -163,7 +166,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             mp.start();
             btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-
+            //coverImage.setImageIcon(songs.get(position).getCover().toString());
             mBuilder = new Builder(this,"NOT")
                     .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
                     .setContentTitle(songs.get(position).getArtist())
@@ -190,6 +193,7 @@ public class PlayerActivity extends AppCompatActivity {
         btnNext     = findViewById(R.id.btnNext);
         btnPrev     = findViewById(R.id.btnPrev);
         songs       = new ArrayList<>();
+        coverImage  = findViewById(R.id.imageSong);
         mSeekbarUpdateHandler     = new Handler();
         final Bundle file = getIntent().getExtras();
         songs       = (ArrayList<Song>) file.getSerializable("song");
@@ -212,9 +216,11 @@ public class PlayerActivity extends AppCompatActivity {
         int totalSeconds = (int) timeDuration/1000;
         int minutes = totalSeconds/60;
         int seconds = totalSeconds % 60;
-        tvSong.setText(songs.get(position).getTitle());
         tvAlbum.setText(songs.get(position).getAlbum());
         tvArtist.setText(songs.get(position).getArtist());
         tvDuration.setText(minutes+":"+seconds);
+        tvSong.setText(songs.get(position).getTitle());
     }
+
+
 }

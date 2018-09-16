@@ -9,7 +9,11 @@ public class Song implements Serializable {
     private String url;
     private String album;
     private String duration;
+    private String cover;
 
+    public  Song(){
+
+    }
     public Song(long id, String title, String artist, String album, String duration,String url) {
         this.id = id;
         this.title = title;
@@ -17,6 +21,7 @@ public class Song implements Serializable {
         this.album = album;
         this.duration = duration;
         this.url = url;
+        this.cover = cover;
     }
 
 
@@ -66,5 +71,13 @@ public class Song implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setCover (String cover){
+        this.cover= cover;
+    }
+
+    public  String getCover(){
+        return this.cover.toString();
     }
 }

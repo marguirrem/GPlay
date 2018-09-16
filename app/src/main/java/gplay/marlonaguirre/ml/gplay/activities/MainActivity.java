@@ -1,21 +1,32 @@
 package gplay.marlonaguirre.ml.gplay.activities;
 
+import android.Manifest;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.Toast;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import gplay.marlonaguirre.ml.gplay.R;
 import gplay.marlonaguirre.ml.gplay.pojos.Song;
@@ -30,16 +41,19 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Song>songs_list;
     TabHost tabHost;
     String path,sd;
+    MediaPlayer mp;
     File rootDirectory,sdDirectory;
+    public static final int RUNTIME_PERMISSION_CODE = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initComponents();
-        //searchSongs(rootDirectory);
-        buscarMusica();
+        searchSongs(rootDirectory);
+        //buscarMusica();
 
+       // getAllAudioFromDevice(this);
         final SongsAdapter adapter = new SongsAdapter(songs_list);
         adapter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("song",  songs_list);
-                bundle.putInt("position",recyclerFolders.getChildAdapterPosition(view));
+                bundle.putInt("position",recyclerSongs.getChildAdapterPosition(view));
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
@@ -63,6 +77,13 @@ public class MainActivity extends AppCompatActivity {
                                 folders_list.get(recyclerFolders
                                         .getChildAdapterPosition(view)).getName()
                         , Toast.LENGTH_SHORT).show();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("folder",  folders_list.get(recyclerFolders
+                        .getChildAdapterPosition(view)).getAbsoluteFile());
+                Intent intent = new Intent(MainActivity.this,FolderSongs.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+
             }
         });
         recyclerSongs.setLayoutManager( new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
@@ -93,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerFolders = findViewById(R.id.recyclerFolders);
         folders_list    = new ArrayList<>();
         songs_list      = new ArrayList<>();
-        path            = Environment.getExternalStorageDirectory().getPath();
+        path            = Environment.getExternalStorageDirectory().getAbsolutePath().toString();
         sd              = Environment.getDataDirectory().toString();
         rootDirectory   = new File(path);
         sdDirectory   = new File(sd);
@@ -103,12 +124,17 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(view.getContext(), "Click", Toast.LENGTH_SHORT).show();
     }
 
-    public void buscarMusica(){
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+   public void buscarMusica(){
+       ContentResolver musicResolver = getContentResolver();
+       Uri musicUri = MediaStore.Audio.Media.getContentUriForPath(rootDirectory.getAbsolutePath()) ;
+       //String [] proj={MediaStore.Audio.Media.getContentUriForPath()};
+
+       //Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         if(musicCursor!=null && musicCursor.moveToFirst()){
+
             //get columns
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
@@ -122,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+
             //add songs to list
             do {
                 String strDuration = musicCursor.getString(intDuration);
@@ -137,7 +164,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-   /* private ArrayList<File> searchSongs(File path) {
+
+
+   private ArrayList<Song> searchSongs(File path) {
+       Song song;
         for(File file : path.listFiles()){
             if(file.isFile()  && !file.isHidden() && (
                                                     file.getName().endsWith(".m4a")
@@ -148,7 +178,21 @@ public class MainActivity extends AppCompatActivity {
                                                             || file.getName().endsWith(".acc")
             ) ){
                 folders_list.add(file.getParentFile());
-                songs_list.add(file);
+                song = new Song();
+                song.setTitle(file.getName());
+                song.setUrl(file.getPath());
+
+                mp = new MediaPlayer();
+                try {
+                    mp.setDataSource(song.getUrl());
+                    mp.prepare();
+                    song.setDuration(String.valueOf(mp.getDuration()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                songs_list.add(song);
+
             }else{
                 if(file.isDirectory() && !file.isHidden()){
                     searchSongs(file);
@@ -156,5 +200,103 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return  songs_list;
-    }*/
+    }
+
+    // Creating Runtime permission function.
+    public void AndroidRuntimePermission(){
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+
+            if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+
+                if(shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)){
+
+                    AlertDialog.Builder alert_builder = new AlertDialog.Builder(MainActivity.this);
+                    alert_builder.setMessage("External Storage Permission is Required.");
+                    alert_builder.setTitle("Please Grant Permission.");
+                    alert_builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            ActivityCompat.requestPermissions(
+                                    MainActivity.this,
+                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                    RUNTIME_PERMISSION_CODE
+
+                            );
+                        }
+                    });
+
+                    alert_builder.setNeutralButton("Cancel",null);
+
+                    AlertDialog dialog = alert_builder.create();
+
+                    dialog.show();
+
+                }
+                else {
+
+                    ActivityCompat.requestPermissions(
+                            MainActivity.this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            RUNTIME_PERMISSION_CODE
+                    );
+                }
+            }else {
+
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+
+        switch(requestCode){
+
+            case RUNTIME_PERMISSION_CODE:{
+
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+
+                }
+                else {
+
+                }
+            }
+        }
+    }
+
+    public List<Song> getAllAudioFromDevice(final Context context) {
+
+
+        Uri uri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
+        String[] projection = {MediaStore.Audio.AudioColumns.DATA, MediaStore.Audio.AudioColumns.ALBUM, MediaStore.Audio.ArtistColumns.ARTIST,};
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+        Cursor c = context.getContentResolver().query(uri, projection, selection, null, null);
+
+        if (c != null) {
+            while (c.moveToNext()) {
+
+                Song audioModel = new Song();
+                String path = c.getString(0);
+                String album = c.getString(1);
+                String artist = c.getString(2);
+
+                String name = path.substring(path.lastIndexOf("/") + 1);
+
+                audioModel.setTitle(name);
+                audioModel.setAlbum(album);
+                audioModel.setArtist(artist);
+                audioModel.setUrl(path);
+
+                Log.e("Name :" + name, " Album :" + album);
+                Log.e("Path :" + path, " Artist :" + artist);
+
+                songs_list.add(audioModel);
+            }
+            c.close();
+        }
+
+        return songs_list;
+    }
 }
