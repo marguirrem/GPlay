@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initComponents();
-        searchSongs(rootDirectory);
-        //buscarMusica();
+        //searchSongs(rootDirectory);
+        buscarMusica();
 
        // getAllAudioFromDevice(this);
         final SongsAdapter adapter = new SongsAdapter(songs_list);
@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
    public void buscarMusica(){
        ContentResolver musicResolver = getContentResolver();
        Uri musicUri = MediaStore.Audio.Media.getContentUriForPath(rootDirectory.getAbsolutePath()) ;
+       File currentFolder;
        //String [] proj={MediaStore.Audio.Media.getContentUriForPath()};
 
        //Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -153,12 +154,16 @@ public class MainActivity extends AppCompatActivity {
             do {
                 String strDuration = musicCursor.getString(intDuration);
                 String strAlbum = musicCursor.getString(intAlbum);
+
                 String data = musicCursor.getString(intUrl);
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
 
+                currentFolder = new File(data);
+                folders_list.add(currentFolder.getParentFile());
                 songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
+
             }
             while (musicCursor.moveToNext());
         }

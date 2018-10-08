@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,8 +32,8 @@ public class FolderSongs extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_folder_songs);
         initComponents();
-        searchSongs(folder);
-        //buscarMusica();
+        //searchSongs(folder);
+        buscarMusica();
 
 
         final SongsAdapter adapter = new SongsAdapter(songs_list);
@@ -76,6 +77,7 @@ public class FolderSongs extends AppCompatActivity {
             ) ){
                 song = new Song();
                 song.setTitle(file.getName());
+
                 song.setUrl(file.getPath());
 
                 mp = new MediaPlayer();
@@ -99,10 +101,22 @@ public class FolderSongs extends AppCompatActivity {
 
     public void buscarMusica(){
         ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = MediaStore.Audio.Media.getContentUriForPath(folder.getAbsolutePath()) ;
-        //String [] proj={MediaStore.Audio.Media.getContentUriForPath()};
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String [] proj = {MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.ARTIST};
+        Cursor musicCursor = musicResolver.query(musicUri,
+                null,
+                MediaStore.Audio.Media.DATA + " like ?",
+                new String[]{"%"+folder.getName()+"%"}, // Put your device folder / file location here.
+                null);
 
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+
+        String selection = MediaStore.Audio.Media.TITLE;
+
+
+       // Uri musicUri = Uri.fromFile(folder.getAbsoluteFile());
+
+        //Cursor musicCursor = musicResolver.query(Uri.fromFile(folder.getAbsoluteFile()), proj, selection, null, null);
 
 
 
