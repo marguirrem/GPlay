@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("song",  songs_list);
-                bundle.putInt("position",recyclerFolders.getChildAdapterPosition(view));
+                bundle.putInt("position",recyclerSongs.getChildAdapterPosition(view));
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
@@ -73,10 +73,14 @@ public class MainActivity extends AppCompatActivity {
         adapterFolders.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MainActivity.this,"folder: "+
-                                folders_list.get(recyclerFolders
-                                        .getChildAdapterPosition(view)).getName()
-                        , Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, SongsFolder.class);
+
+                Bundle bundle = new Bundle();
+                bundle.putString("folder",  folders_list.get(recyclerFolders.getChildAdapterPosition(view)).getName());
+                intent.putExtras(bundle);
+                startActivity(intent);
+
+
             }
         });
 
