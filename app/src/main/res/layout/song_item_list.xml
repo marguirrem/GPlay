@@ -19,6 +19,12 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
+         <ImageView
+             android:id="@+id/ivSongItem"
+             android:layout_width="25dp"
+             android:layout_height="25dp"
+             android:src="@mipmap/ic_launcher_round"/>
+
         <TextView
             android:id="@+id/tvSong"
             android:layout_width="0dp"

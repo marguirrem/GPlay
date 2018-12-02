@@ -1,5 +1,7 @@
 package gplay.marlonaguirre.ml.gplay.pojos;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 public class Song implements Serializable {
@@ -9,14 +11,16 @@ public class Song implements Serializable {
     private String url;
     private String album;
     private String duration;
+    private Bitmap bitmap;
 
-    public Song(long id, String title, String artist, String album, String duration,String url) {
+    public Song(long id, String title, String artist, String album, String duration,String url,Bitmap bitmap) {
         this.id = id;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.url = url;
+        this.bitmap = bitmap;
     }
 
 
@@ -66,5 +70,13 @@ public class Song implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setBitmap (Bitmap bitmap){
+        this.bitmap = bitmap;
+    }
+
+    public Bitmap getBitmap() {
+        return this.bitmap;
     }
 }

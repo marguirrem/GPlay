@@ -1,15 +1,22 @@
 package gplay.marlonaguirre.ml.gplay.activities;
 
+import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -25,6 +32,8 @@ import gplay.marlonaguirre.ml.gplay.adapters.SongsAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     RecyclerView recyclerSongs,recyclerFolders;
     ArrayList<File> folders_list;
     ArrayList<Song>songs_list;
@@ -38,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initComponents();
         //searchSongs(rootDirectory);
-        buscarMusica();
+        //buscarMusica();
+        buscarMusicaconcover();
+
 
         final SongsAdapter adapter = new SongsAdapter(songs_list);
         adapter.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initComponents(){
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+
+
         tabHost = findViewById(R.id.tabHost);
         tabHost.setup();
         TabHost.TabSpec thSongs     = tabHost.newTabSpec("Tab1");
@@ -103,6 +118,21 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(view.getContext(), "Click", Toast.LENGTH_SHORT).show();
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                buscarMusicaconcover();
+            } else {
+                // Permission Denied
+                Toast.makeText(MainActivity.this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
     public void buscarMusica(){
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -131,11 +161,60 @@ public class MainActivity extends AppCompatActivity {
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
 
-                songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
+               // songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
             }
             while (musicCursor.moveToNext());
         }
 
+    }
+
+
+
+    public void buscarMusicaconcover() {
+        // Query URI
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+// Columns
+        String[] select = {
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.DURATION
+        };
+
+// Where
+        String where = MediaStore.Audio.Media.IS_MUSIC + "=1";
+
+// Perform the query
+        Cursor cursor = this.getContentResolver().query(uri, select, where, null, null);
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                long albumId = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
+                String artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+                String album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
+                String track = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
+                String data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+                int duration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+
+                final Uri ART_CONTENT_URI = Uri.parse("content://media/external/audio/albumart");
+                Uri albumArtUri = ContentUris.withAppendedId(ART_CONTENT_URI, albumId);
+
+                Bitmap bitmap = null;
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), albumArtUri);
+                } catch (Exception exception) {
+                    Log.e("bitmap",exception.getMessage());
+                }
+                songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,bitmap));
+                cursor.moveToNext();
+            }
+            cursor.close();
+
+        }
     }
    /* private ArrayList<File> searchSongs(File path) {
         for(File file : path.listFiles()){
@@ -157,4 +236,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return  songs_list;
     }*/
-}
+    }
