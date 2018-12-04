@@ -1,8 +1,12 @@
 package gplay.marlonaguirre.ml.gplay.pojos;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.io.Serializable;
+
 
 public class Song implements Serializable {
     private long id;
@@ -11,16 +15,19 @@ public class Song implements Serializable {
     private String url;
     private String album;
     private String duration;
-    private Bitmap bitmap;
+   // private Bitmap bitmap;
+    private String coveruri;
 
-    public Song(long id, String title, String artist, String album, String duration,String url,Bitmap bitmap) {
+
+    public Song(long id, String title, String artist, String album, String duration, String url,String coveruri) {
         this.id = id;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.url = url;
-        this.bitmap = bitmap;
+        //this.bitmap = bitmap;
+        this.coveruri = coveruri;
     }
 
 
@@ -44,39 +51,24 @@ public class Song implements Serializable {
         return artist;
     }
 
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
-
     public String getAlbum() {
         return album;
-    }
-
-    public void setAlbum(String album) {
-        this.album = album;
     }
 
     public String getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
-        this.duration = duration;
-    }
-
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+//    public Bitmap getBitmap() {
+  //      return this.bitmap;
+    //}
 
-    public void setBitmap (Bitmap bitmap){
-        this.bitmap = bitmap;
-    }
 
-    public Bitmap getBitmap() {
-        return this.bitmap;
+    public String getCoveruri() {
+        return coveruri;
     }
 }

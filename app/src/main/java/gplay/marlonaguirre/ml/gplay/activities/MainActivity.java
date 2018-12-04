@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     RecyclerView recyclerSongs,recyclerFolders;
     ArrayList<File> folders_list;
-    ArrayList<Song>songs_list;
+    public ArrayList<Song>songs_list;
     TabHost tabHost;
     String path,sd;
     File rootDirectory,sdDirectory;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         buscarMusicaconcover();
 
 
-        final SongsAdapter adapter = new SongsAdapter(songs_list);
+        final SongsAdapter adapter = new SongsAdapter(songs_list,this);
         adapter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, SongsFolder.class);
+                intent.putExtra("song", songs_list);
 
                 Bundle bundle = new Bundle();
                 bundle.putString("folder",  folders_list.get(recyclerFolders.getChildAdapterPosition(view)).getName());
@@ -167,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
 
-               // songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
+             //   songs_list.add(new Song(thisId, thisTitle, thisArtist,strAlbum,strDuration,data));
             }
             while (musicCursor.moveToNext());
         }
@@ -206,24 +207,30 @@ public class MainActivity extends AppCompatActivity {
                 String data = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                 int duration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
 
-                final Uri ART_CONTENT_URI = Uri.parse("content://media/external/audio/albumart");
-                Uri albumArtUri = ContentUris.withAppendedId(ART_CONTENT_URI, albumId);
+               // final Uri ART_CONTENT_URI = Uri.parse("content://media/external/audio/albumart");
+               // Uri albumArtUri = ContentUris.withAppendedId(ART_CONTENT_URI, albumId);
 
 
-                try {
+             /*   try {
                     bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), albumArtUri);
                 } catch (Exception exception) {
                     //Log.e("bitmap",exception.getMessage());
-                }
+                }*/
                 file = new File(data);
 
                 folders_list.add(file.getParentFile());
-                songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,bitmap));
+                songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,"content://media/external/audio/albumart/"+albumId));
                 cursor.moveToNext();
             }
             cursor.close();
 
         }
+    }
+
+
+
+    public ArrayList<Song>  getSongs(){
+        return this.songs_list;
     }
    /* private ArrayList<File> searchSongs(File path) {
         for(File file : path.listFiles()){
@@ -245,4 +252,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return  songs_list;
     }*/
+
     }

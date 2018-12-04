@@ -1,7 +1,10 @@
 package gplay.marlonaguirre.ml.gplay.activities;
 
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +32,8 @@ public class PlayerActivity extends AppCompatActivity {
     ArrayList<Song> songs;
     TextView tvSong,tvDuration,tvArtist,tvAlbum,tvCurrentTime;
     ImageButton btnPlay,btnNext,btnPrev;
+    ImageView songImage;
+
     SeekBar seekBar;
     Runnable mUpdateSeekbar;
     Handler mSeekbarUpdateHandler;
@@ -37,6 +43,7 @@ public class PlayerActivity extends AppCompatActivity {
     static MediaPlayer mp = new MediaPlayer();
     NotificationManagerCompat notificationManager;
     Builder mBuilder;
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -157,16 +164,24 @@ public class PlayerActivity extends AppCompatActivity {
             mp = new MediaPlayer();
             mp.setDataSource(songs.get(position).getUrl());
             mp.prepare();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(songs.get(position).getCoveruri()));
+                songImage.setImageBitmap(bitmap);
+
+            } catch (Exception exception) {
+                //Log.e("bitmap",exception.getMessage());
+                songImage.setImageResource(R.drawable.ic_headset_black_24dp);
+            }
+
             updateTexts(position);
-            seekBar.setMax((mp.getDuration() / 1000) );
+            seekBar.setMax((mp.getDuration() / 1000));
             seekBar.setProgress(0);
 
             mp.start();
             btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
 
-            mBuilder = new Builder(this,"NOT")
+            mBuilder = new Builder(this, "NOT")
                     .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
-                    .setContentTitle(songs.get(position).getArtist())
                     .setContentText(songs.get(position).getTitle())
                     .setStyle(new BigTextStyle()
                             .bigText(songs.get(position).getTitle()))
@@ -189,10 +204,13 @@ public class PlayerActivity extends AppCompatActivity {
         btnPlay     = findViewById(R.id.btnPlay);
         btnNext     = findViewById(R.id.btnNext);
         btnPrev     = findViewById(R.id.btnPrev);
+        songImage   = findViewById(R.id.imageSong);
         songs       = new ArrayList<>();
         mSeekbarUpdateHandler     = new Handler();
         final Bundle file = getIntent().getExtras();
+
         songs       = (ArrayList<Song>) file.getSerializable("song");
+
         position    = file.getInt("position");
         seekBar     = findViewById(R.id.songProgress);
         mBuilder = new Builder(this,"NOT")

@@ -32,7 +32,7 @@ public class SongsFolder extends AppCompatActivity {
         buscarMusicaFolder();
 
 
-        SongsAdapter adapter = new SongsAdapter(songs_list);
+        SongsAdapter adapter = new SongsAdapter(songs_list,this);
         adapter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,12 +76,10 @@ public class SongsFolder extends AppCompatActivity {
         // Where
         String where = MediaStore.Audio.Media.IS_MUSIC + "=1";
 
-
         Cursor cursor = getContentResolver().query(
                 uri, select,
                 android.provider.MediaStore.Audio.Media.DATA + " like ? ",
                 new String[] {"%"+this.folder+"%"}, null);
-
 
         // Perform the query
         // cursor = this.getContentResolver().query(uri, select, where, null, null);
@@ -99,14 +97,15 @@ public class SongsFolder extends AppCompatActivity {
 
                 final Uri ART_CONTENT_URI = Uri.parse("content://media/external/audio/albumart");
                 Uri albumArtUri = ContentUris.withAppendedId(ART_CONTENT_URI, albumId);
-
-
+/*
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), albumArtUri);
                 } catch (Exception exception) {
                     //Log.e("bitmap",exception.getMessage());
-                }
-                songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,bitmap));
+                }*/
+                //songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,bitmap));
+               // songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data));
+                songs_list.add(new Song(albumId, track, artist,album,String.valueOf(duration),data,"content://media/external/audio/albumart/"+albumId));
                 cursor.moveToNext();
             }
             cursor.close();
