@@ -1,13 +1,20 @@
 package gplay.marlonaguirre.ml.gplay.activities;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,21 +26,21 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
+import gplay.marlonaguirre.ml.gplay.CreateNotification;
 import gplay.marlonaguirre.ml.gplay.R;
+import gplay.marlonaguirre.ml.gplay.Services.OnClearFromRecentService;
+import gplay.marlonaguirre.ml.gplay.interfaces.Playable;
 import gplay.marlonaguirre.ml.gplay.pojos.Song;
 
-import static android.support.v4.app.NotificationCompat.*;
+import static androidx.core.app.NotificationCompat.*;
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity  implements Playable {
 
     ArrayList<Song> songs;
     TextView tvSong,tvDuration,tvArtist,tvAlbum,tvCurrentTime;
     ImageButton btnPlay,btnNext,btnPrev;
     ImageView songImage;
-
     SeekBar seekBar;
     Runnable mUpdateSeekbar;
     Handler mSeekbarUpdateHandler;
@@ -41,21 +48,13 @@ public class PlayerActivity extends AppCompatActivity {
     long currentSecond=0;
     int currentMinute=0,sec=0;
     static MediaPlayer mp = new MediaPlayer();
-    NotificationManagerCompat notificationManager;
-    Builder mBuilder;
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
-    }
+    NotificationManager notificationManager;
+    boolean isPlaying = false;
 
     @Override
     protected void onPause() {
         super.onPause();
         mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
-
     }
 
     @Override
@@ -63,7 +62,7 @@ public class PlayerActivity extends AppCompatActivity {
         super.onResume();
         seekBar.setProgress(mp.getCurrentPosition());
         mp.start();
-        btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+        btnPlay.setBackgroundResource(R.drawable.ic_pause_black_24dp);
     }
 
     @Override
@@ -72,7 +71,13 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
         initComponents();
 
-       playSong();
+        //playSong();
+        onTrackPlay();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            createChannel();
+            registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
+            startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
+        }
 
         mSeekbarUpdateHandler = new Handler();
         Runnable mUpdateSeekbar = new Runnable() {
@@ -86,7 +91,8 @@ public class PlayerActivity extends AppCompatActivity {
                 Log.e("HILO","currentSecond: "+currentSecond+" totalSeconds: "+((mp.getDuration()/1000)%60));
                 if(seekBar.getProgress() == (seekBar.getMax())){
                     position++;
-                    btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+                  //  btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+
                     playSong();
                 }
                 sec++;
@@ -96,7 +102,6 @@ public class PlayerActivity extends AppCompatActivity {
         };
 
         mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
-
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -113,19 +118,22 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-
         updateTexts(position);
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mp.isPlaying()){
+                /*  if(mp.isPlaying()){
                     mp.pause();
                     btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                 }
                 else {
                     mp.start();
-
                     btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+                }*/
+                if (isPlaying){
+                    onTrackPause();
+                } else {
+                    onTrackPlay();
                 }
             }
         });
@@ -133,31 +141,59 @@ public class PlayerActivity extends AppCompatActivity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(position <songs.size()){
-                    position++;
-                    Toast.makeText(PlayerActivity.this, songs.get(position).getTitle(), Toast.LENGTH_SHORT).show();
-                    playSong();
-                }
+                onTrackNext();
             }
         });
 
         btnPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(position > 0){
-                    position--;
-                    Toast.makeText(PlayerActivity.this, songs.get(position).getTitle(), Toast.LENGTH_SHORT).show();
-                    playSong();
-                }
+               onTrackPrevious();
             }
         });
     }
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getExtras().getString("actionname");
+
+            switch (action){
+                case CreateNotification.ACTION_PREVIUOS:
+                    onTrackPrevious();
+                    break;
+                case CreateNotification.ACTION_PLAY:
+                    if (isPlaying){
+                        onTrackPause();
+                    } else {
+                        onTrackPlay();
+                    }
+                    break;
+                case CreateNotification.ACTION_NEXT:
+                    onTrackNext();
+                    break;
+            }
+        }
+    };
 
     public void playSong(){
+        Log.e("boton","posicion "+position);
+        if(position == 0){
+            btnPrev.setEnabled(false);
+            btnPrev.setVisibility(View.GONE);
+        }else if (position == songs.size()){
+            btnNext.setEnabled(false);
+            btnNext.setVisibility(View.GONE);
+        }
+        else{
+            btnPrev.setEnabled(true);
+            btnPrev.setVisibility(View.VISIBLE);
+            btnNext.setEnabled(true);
+            btnNext.setVisibility(View.VISIBLE);
+        }
+
         if (mp.isPlaying()) {
             mp.stop();
             mp.release();
-            mBuilder=null;
         }
         try {
 
@@ -169,26 +205,14 @@ public class PlayerActivity extends AppCompatActivity {
                 songImage.setImageBitmap(bitmap);
 
             } catch (Exception exception) {
-                //Log.e("bitmap",exception.getMessage());
                 songImage.setImageResource(R.drawable.ic_headset_black_24dp);
             }
 
             updateTexts(position);
             seekBar.setMax((mp.getDuration() / 1000));
             seekBar.setProgress(0);
-
             mp.start();
-            btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-
-            mBuilder = new Builder(this, "NOT")
-                    .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
-                    .setContentText(songs.get(position).getTitle())
-                    .setStyle(new BigTextStyle()
-                            .bigText(songs.get(position).getTitle()))
-                    .setPriority(PRIORITY_DEFAULT);
-
-            // notificationId is a unique int for each notification that you must define
-            notificationManager.notify(1, mBuilder.build());
+            btnPlay.setBackgroundResource(R.drawable.ic_pause_black_24dp);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -210,19 +234,8 @@ public class PlayerActivity extends AppCompatActivity {
         final Bundle file = getIntent().getExtras();
 
         songs       = (ArrayList<Song>) file.getSerializable("song");
-
         position    = file.getInt("position");
         seekBar     = findViewById(R.id.songProgress);
-        mBuilder = new Builder(this,"NOT")
-                .setSmallIcon(R.drawable.ic_play_circle_outline_black_24dp)
-                .setContentTitle(songs.get(position).getArtist())
-                .setContentText(songs.get(position).getTitle())
-                .setStyle(new BigTextStyle()
-                        .bigText(songs.get(position).getTitle()))
-                .setPriority(PRIORITY_DEFAULT);
-
-        notificationManager = NotificationManagerCompat.from(this);
-
     }
 
     public void updateTexts(int position){
@@ -234,5 +247,86 @@ public class PlayerActivity extends AppCompatActivity {
         tvAlbum.setText(songs.get(position).getAlbum());
         tvArtist.setText(songs.get(position).getArtist());
         tvDuration.setText(minutes+":"+seconds);
+    }
+
+    private void createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel(CreateNotification.CHANNEL_ID,
+                    "KOD Dev", NotificationManager.IMPORTANCE_LOW);
+
+            notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null){
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+    @Override
+    public void onTrackPrevious() {
+        position--;
+        CreateNotification.createNotification(PlayerActivity.this, songs.get(position),
+                R.drawable.ic_pause_black_24dp, position, songs.size()-1);
+        //title.setText(tracks.get(position).getTitle());
+        playSong();
+    }
+
+    @Override
+    public void onTrackPlay() {
+        CreateNotification.createNotification(PlayerActivity.this, songs.get(position),
+                R.drawable.ic_pause_black_24dp, position, songs.size()-1);
+        btnPlay.setBackgroundResource(R.drawable.ic_pause_black_24dp);
+        //title.setText(tracks.get(position).getTitle());
+        isPlaying = true;
+        mp.start();
+    }
+
+    @Override
+    public void onTrackPause() {
+
+        CreateNotification.createNotification(PlayerActivity.this, songs.get(position),
+                R.drawable.ic_play_arrow_black_24dp, position, songs.size()-1);
+        //btnPlay.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+        //title.setText(tracks.get(position).getTitle());
+        isPlaying = false;
+        if(mp.isPlaying()) {
+            mp.pause();
+            btnPlay.setBackgroundResource(R.drawable.ic_play_arrow_black_24dp);
+        }
+        else {
+            mp.start();
+            btnPlay.setBackgroundResource(R.drawable.ic_pause_black_24dp);
+        }
+    }
+
+    @Override
+    public void onTrackNext() {
+        position++;
+        CreateNotification.createNotification(PlayerActivity.this, songs.get(position),
+                R.drawable.ic_pause_black_24dp, position, songs.size()-1);
+        //title.setText(tracks.get(position).getTitle());
+        if(position == songs.size()){
+            btnNext.setEnabled(false);
+        }else{
+            btnNext.setEnabled(true);
+        }
+        playSong();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            notificationManager.cancelAll();
+        }
+
+        unregisterReceiver(broadcastReceiver);
+        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+    }
+
+    public ImageButton getBtnPrev(){
+        return this.btnPrev;
+    }
+
+    public  ImageButton getBtnNext(){
+        return this.btnNext;
     }
 }
