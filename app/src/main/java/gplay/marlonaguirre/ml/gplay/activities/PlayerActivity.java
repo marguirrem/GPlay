@@ -71,8 +71,8 @@ public class PlayerActivity extends AppCompatActivity  implements Playable {
         setContentView(R.layout.activity_player);
         initComponents();
 
-        //playSong();
-        onTrackPlay();
+        playSong();
+        //onTrackPlay();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             createChannel();
             registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
@@ -122,14 +122,6 @@ public class PlayerActivity extends AppCompatActivity  implements Playable {
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*  if(mp.isPlaying()){
-                    mp.pause();
-                    btnPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
-                }
-                else {
-                    mp.start();
-                    btnPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                }*/
                 if (isPlaying){
                     onTrackPause();
                 } else {
@@ -176,7 +168,6 @@ public class PlayerActivity extends AppCompatActivity  implements Playable {
     };
 
     public void playSong(){
-        Log.e("boton","posicion "+position);
         if(position == 0){
             btnPrev.setEnabled(false);
             btnPrev.setVisibility(View.GONE);
@@ -196,7 +187,6 @@ public class PlayerActivity extends AppCompatActivity  implements Playable {
             mp.release();
         }
         try {
-
             mp = new MediaPlayer();
             mp.setDataSource(songs.get(position).getUrl());
             mp.prepare();
@@ -232,7 +222,6 @@ public class PlayerActivity extends AppCompatActivity  implements Playable {
         songs       = new ArrayList<>();
         mSeekbarUpdateHandler     = new Handler();
         final Bundle file = getIntent().getExtras();
-
         songs       = (ArrayList<Song>) file.getSerializable("song");
         position    = file.getInt("position");
         seekBar     = findViewById(R.id.songProgress);

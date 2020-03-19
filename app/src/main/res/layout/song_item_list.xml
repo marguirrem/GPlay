@@ -24,18 +24,20 @@
              android:id="@+id/ivSongItem"
              android:layout_width="25dp"
              android:layout_height="25dp"
+             android:layout_margin="2dp"
              android:src="@mipmap/ic_launcher_round"/>
 
-        <TextView
-            android:id="@+id/tvSong"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:text="dfsdf"
-            android:textColor="@android:color/black"
-            android:textSize="20sp" />
+            <TextView
+                android:id="@+id/tvSong"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="dfsdf"
+                android:maxLength="30"
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/ivMore"
