@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.PlayerActivity"
@@ -11,15 +12,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Song"
-        android:drawableLeft="@mipmap/ic_launcher_round"/>
+        android:drawableLeft="@drawable/ic_melody"/>
 
     <ImageView
         android:id="@+id/imageSong"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="250dp"
         />
 
     <TextView
+        android:layout_marginTop="150dp"
         android:id="@+id/playerTvArtist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
